@@ -87,6 +87,10 @@ class QloraTrainer:
                 logging_steps=config_dict["logging_steps"],
                 output_dir=self.config["trainer_output_dir"],
                 report_to="tensorboard",
+              # Add these for checkpointing!
+                save_steps=100,  # Save every 500 steps (adjust to your needs, e.g., 100 for shorter runs)
+                save_strategy="steps",  # Or "epoch" if you prefer per-epoch saves
+                save_total_limit=3,  # Keep only the last 3 checkpoints to save space (deletes older ones)
                 #optim="adamw"
             ),
             data_collator=transformers.DataCollatorForLanguageModeling(self.tokenizer, mlm=False),
