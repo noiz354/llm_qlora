@@ -1,11 +1,13 @@
-torch
+torch==2.6.0+cu124
+torchaudio==2.6.0+cu124
+torchvision==0.21.0+cu124
+bitsandbytes==0.43.3
 transformers
 accelerate
-bitsandbytes
 datasets
 peft
 loralib
 sentencepiece
 scipy
-peft
 tensorboardX
+flash-attn==2.7.1.post4

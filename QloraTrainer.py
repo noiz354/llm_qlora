@@ -31,17 +31,17 @@ class QloraTrainer:
 
         if "model_family" in self.config and self.config["model_family"] == "llama":
             tokenizer = LlamaTokenizer.from_pretrained(model_id)
-            model = LlamaForCausalLM.from_pretrained(model_id, quantization_config=bnb_config, device_map={"":0})
+            model = LlamaForCausalLM.from_pretrained(model_id, quantization_config=bnb_config, device_map={"":0}, attn_implementation="flash_attention_2",)
         else:
             tokenizer = AutoTokenizer.from_pretrained(model_id)
-            model = AutoModelForCausalLM.from_pretrained(model_id, quantization_config=bnb_config, device_map={"":0})
+            model = AutoModelForCausalLM.from_pretrained(model_id, quantization_config=bnb_config, device_map={"":0}, attn_implementation="flash_attention_2",)
 
         if not tokenizer.pad_token:
             # Add padding token if missing, e.g. for llama tokenizer
             #tokenizer.pad_token = tokenizer.eos_token  # https://github.com/huggingface/transformers/issues/22794
             tokenizer.add_special_tokens({'pad_token': '[PAD]'})
 
-        model.gradient_checkpointing_enable()
+        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs = {"use_reentrant": False})
         model = prepare_model_for_kbit_training(model)
 
         self.tokenizer = tokenizer
@@ -84,6 +84,7 @@ class QloraTrainer:
                 num_train_epochs=config_dict["num_train_epochs"],
                 learning_rate=config_dict["learning_rate"],
                 fp16=True,
+                max_steps=config_dict["max_steps"],
                 logging_steps=config_dict["logging_steps"],
                 output_dir=self.config["trainer_output_dir"],
                 report_to="tensorboard",
@@ -91,7 +92,7 @@ class QloraTrainer:
                 save_steps=100,  # Save every 500 steps (adjust to your needs, e.g., 100 for shorter runs)
                 save_strategy="steps",  # Or "epoch" if you prefer per-epoch saves
                 save_total_limit=3,  # Keep only the last 3 checkpoints to save space (deletes older ones)
-                #optim="adamw"
+                optim=config_dict["optim"],
             ),
             data_collator=transformers.DataCollatorForLanguageModeling(self.tokenizer, mlm=False),
         )
