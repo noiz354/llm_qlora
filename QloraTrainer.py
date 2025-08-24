@@ -84,7 +84,6 @@ class QloraTrainer:
                 num_train_epochs=config_dict["num_train_epochs"],
                 learning_rate=config_dict["learning_rate"],
                 fp16=True,
-                max_steps=config_dict["max_steps"],
                 logging_steps=config_dict["logging_steps"],
                 output_dir=self.config["trainer_output_dir"],
                 report_to="tensorboard",
